@@ -1,0 +1,40 @@
+# Секреты и доступы
+*.key
+*.pem
+*.ppk
+*.p12
+*.pfx
+id_rsa*
+id_ed25519*
+.env
+.env.*
+secrets/
+passwords*
+credentials*
+
+# Рабочие базы данных
+*.sqlite
+*.sqlite3
+*.db
+*.db-journal
+*.db-wal
+*.db-shm
+
+# Временные и служебные файлы
+Thumbs.db
+desktop.ini
+.DS_Store
+*.tmp
+*.temp
+*.bak
+*~
+__pycache__/
+.venv/
+venv/
+node_modules/
+
+# Крупные образы и файлы GNS3
+*.qcow2
+*.iso
+*.vmdk
+*.ova
