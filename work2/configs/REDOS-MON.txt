@@ -1,0 +1,13 @@
+hostname
+MON
+[student@localhost ~]$ 
+[student@localhost ~]$ ip -4 addr show enp2s0 | head -4
+2: enp2s0: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc fq_codel state UP group default qlen 1000
+    inet 192.168.20.11/26 brd 192.168.20.63 scope global noprefixroute enp2s0
+       valid_lft forever preferred_lft forever
+[student@localhost ~]$ 
+[student@localhost ~]$ ip route
+default via 192.168.20.1 dev enp2s0 proto static metric 100 
+192.168.20.0/26 dev enp2s0 proto kernel scope link src 192.168.20.11 metric 100 
+[student@localhost ~]$ 
+[student@localhost ~]$
