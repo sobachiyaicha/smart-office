@@ -1,0 +1,546 @@
+[
+  {
+    "id": "tab_smart_office",
+    "type": "tab",
+    "label": "Умный офис: датчики и вентилятор",
+    "disabled": false,
+    "info": "TEMP-01 и HUM-01 каждые 5 с отправляют показания на CTRL. Отдельные change-узлы FAN ON и FAN OFF: больше 30 C — ON, иначе OFF; запрос идёт на /api/actuators."
+  },
+  {
+    "id": "inj_temp",
+    "type": "inject",
+    "z": "tab_smart_office",
+    "name": "TEMP-01: 18-35 C каждые 5 с",
+    "props": [
+      {
+        "p": "payload",
+        "v": "23",
+        "vt": "jsonata"
+      },
+      {
+        "p": "topic",
+        "vt": "str"
+      }
+    ],
+    "repeat": "5",
+    "crontab": "",
+    "once": true,
+    "onceDelay": "1",
+    "topic": "TEMP-01",
+    "payload": "23",
+    "payloadType": "jsonata",
+    "x": 130,
+    "y": 80,
+    "wires": [
+      [
+        "chg_temp_value"
+      ]
+    ]
+  },
+  {
+    "id": "inj_test_hot",
+    "type": "inject",
+    "z": "tab_smart_office",
+    "name": "ТЕСТ: 33 C (нажать)",
+    "props": [
+      {
+        "p": "payload",
+        "v": "33",
+        "vt": "jsonata"
+      },
+      {
+        "p": "topic",
+        "v": "TEMP-01",
+        "vt": "str"
+      }
+    ],
+    "repeat": "",
+    "crontab": "",
+    "once": false,
+    "onceDelay": 0.1,
+    "topic": "",
+    "payload": "",
+    "payloadType": "date",
+    "x": 130,
+    "y": 150,
+    "wires": [
+      [
+        "chg_temp_value"
+      ]
+    ]
+  },
+  {
+    "id": "chg_temp_value",
+    "type": "change",
+    "z": "tab_smart_office",
+    "name": "TEMP-01: значение и время",
+    "rules": [
+      {
+        "t": "set",
+        "p": "tempValue",
+        "pt": "msg",
+        "to": "payload",
+        "tot": "msg"
+      },
+      {
+        "t": "set",
+        "p": "timestamp",
+        "pt": "msg",
+        "to": "$millis()",
+        "tot": "jsonata"
+      }
+    ],
+    "action": "",
+    "property": "",
+    "from": "",
+    "to": "",
+    "reg": false,
+    "x": 400,
+    "y": 80,
+    "wires": [
+      [
+        "chg_temp_reading",
+        "sw_temp"
+      ]
+    ]
+  },
+  {
+    "id": "chg_temp_reading",
+    "type": "change",
+    "z": "tab_smart_office",
+    "name": "Чтение TEMP-01 -> payload",
+    "rules": [
+      {
+        "t": "set",
+        "p": "payload",
+        "pt": "msg",
+        "to": "{\"sensor_id\":\"TEMP-01\",\"zone\":\"server_room\",\"unit\":\"C\",\"value\":tempValue,\"timestamp\":timestamp}",
+        "tot": "jsonata"
+      },
+      {
+        "t": "set",
+        "p": "headers",
+        "pt": "msg",
+        "to": "{\"Content-Type\":\"application/json\"}",
+        "tot": "json"
+      }
+    ],
+    "action": "",
+    "property": "",
+    "from": "",
+    "to": "",
+    "reg": false,
+    "x": 660,
+    "y": 80,
+    "wires": [
+      [
+        "http_temp"
+      ]
+    ]
+  },
+  {
+    "id": "http_temp",
+    "type": "http request",
+    "z": "tab_smart_office",
+    "name": "POST TEMP-01 -> /api/readings",
+    "method": "POST",
+    "ret": "txt",
+    "paytoqs": "ignore",
+    "url": "http://192.168.20.10:8080/api/readings",
+    "tls": "",
+    "persist": false,
+    "proxy": "",
+    "insecureHTTPParser": false,
+    "authType": "",
+    "senderr": false,
+    "headers": [],
+    "x": 930,
+    "y": 80,
+    "wires": [
+      [
+        "dbg_temp"
+      ]
+    ]
+  },
+  {
+    "id": "dbg_temp",
+    "type": "debug",
+    "z": "tab_smart_office",
+    "name": "Ответ приёмника: TEMP-01",
+    "active": true,
+    "tosidebar": true,
+    "console": false,
+    "tostatus": false,
+    "complete": "payload",
+    "targetType": "msg",
+    "statusVal": "",
+    "statusType": "auto",
+    "x": 1220,
+    "y": 80,
+    "wires": []
+  },
+  {
+    "id": "sw_temp",
+    "type": "switch",
+    "z": "tab_smart_office",
+    "name": "TEMP > 30 C",
+    "property": "tempValue",
+    "propertyType": "msg",
+    "rules": [
+      {
+        "t": "gt",
+        "v": "30",
+        "vt": "num"
+      },
+      {
+        "t": "else"
+      }
+    ],
+    "checkall": "true",
+    "repair": false,
+    "outputs": 2,
+    "x": 640,
+    "y": 220,
+    "wires": [
+      [
+        "chg_fan_on"
+      ],
+      [
+        "chg_fan_off"
+      ]
+    ]
+  },
+  {
+    "id": "chg_fan_on",
+    "type": "change",
+    "z": "tab_smart_office",
+    "name": "change: FAN ON",
+    "rules": [
+      {
+        "t": "set",
+        "p": "fan.state",
+        "pt": "msg",
+        "to": "ON",
+        "tot": "str"
+      },
+      {
+        "t": "set",
+        "p": "fan.actuator_id",
+        "pt": "msg",
+        "to": "FAN-01",
+        "tot": "str"
+      },
+      {
+        "t": "set",
+        "p": "fan.zone",
+        "pt": "msg",
+        "to": "server_room",
+        "tot": "str"
+      },
+      {
+        "t": "set",
+        "p": "fan.mode",
+        "pt": "msg",
+        "to": "auto",
+        "tot": "str"
+      },
+      {
+        "t": "set",
+        "p": "fan.timestamp",
+        "pt": "msg",
+        "to": "$millis()",
+        "tot": "jsonata"
+      },
+      {
+        "t": "set",
+        "p": "payload",
+        "pt": "msg",
+        "to": "fan",
+        "tot": "msg"
+      },
+      {
+        "t": "set",
+        "p": "headers",
+        "pt": "msg",
+        "to": "{\"Content-Type\":\"application/json\"}",
+        "tot": "json"
+      }
+    ],
+    "action": "",
+    "property": "",
+    "from": "",
+    "to": "",
+    "reg": false,
+    "x": 850,
+    "y": 200,
+    "wires": [
+      [
+        "http_fan_on"
+      ]
+    ]
+  },
+  {
+    "id": "chg_fan_off",
+    "type": "change",
+    "z": "tab_smart_office",
+    "name": "change: FAN OFF",
+    "rules": [
+      {
+        "t": "set",
+        "p": "fan.state",
+        "pt": "msg",
+        "to": "OFF",
+        "tot": "str"
+      },
+      {
+        "t": "set",
+        "p": "fan.actuator_id",
+        "pt": "msg",
+        "to": "FAN-01",
+        "tot": "str"
+      },
+      {
+        "t": "set",
+        "p": "fan.zone",
+        "pt": "msg",
+        "to": "server_room",
+        "tot": "str"
+      },
+      {
+        "t": "set",
+        "p": "fan.mode",
+        "pt": "msg",
+        "to": "auto",
+        "tot": "str"
+      },
+      {
+        "t": "set",
+        "p": "fan.timestamp",
+        "pt": "msg",
+        "to": "$millis()",
+        "tot": "jsonata"
+      },
+      {
+        "t": "set",
+        "p": "payload",
+        "pt": "msg",
+        "to": "fan",
+        "tot": "msg"
+      },
+      {
+        "t": "set",
+        "p": "headers",
+        "pt": "msg",
+        "to": "{\"Content-Type\":\"application/json\"}",
+        "tot": "json"
+      }
+    ],
+    "action": "",
+    "property": "",
+    "from": "",
+    "to": "",
+    "reg": false,
+    "x": 830,
+    "y": 280,
+    "wires": [
+      [
+        "http_fan_off"
+      ]
+    ]
+  },
+  {
+    "id": "http_fan_on",
+    "type": "http request",
+    "z": "tab_smart_office",
+    "name": "POST FAN ON -> /api/actuators",
+    "method": "POST",
+    "ret": "txt",
+    "paytoqs": "ignore",
+    "url": "http://192.168.20.10:8080/api/actuators",
+    "tls": "",
+    "persist": false,
+    "proxy": "",
+    "insecureHTTPParser": false,
+    "authType": "",
+    "senderr": false,
+    "headers": [],
+    "x": 1110,
+    "y": 200,
+    "wires": [
+      [
+        "dbg_fan_on"
+      ]
+    ]
+  },
+  {
+    "id": "http_fan_off",
+    "type": "http request",
+    "z": "tab_smart_office",
+    "name": "POST FAN OFF -> /api/actuators",
+    "method": "POST",
+    "ret": "txt",
+    "paytoqs": "ignore",
+    "url": "http://192.168.20.10:8080/api/actuators",
+    "tls": "",
+    "persist": false,
+    "proxy": "",
+    "insecureHTTPParser": false,
+    "authType": "",
+    "senderr": false,
+    "headers": [],
+    "x": 1100,
+    "y": 280,
+    "wires": [
+      [
+        "dbg_fan_off"
+      ]
+    ]
+  },
+  {
+    "id": "dbg_fan_on",
+    "type": "debug",
+    "z": "tab_smart_office",
+    "name": "Ответ приёмника: FAN ON",
+    "active": true,
+    "tosidebar": true,
+    "console": false,
+    "tostatus": false,
+    "complete": "payload",
+    "targetType": "msg",
+    "statusVal": "",
+    "statusType": "auto",
+    "x": 1400,
+    "y": 200,
+    "wires": []
+  },
+  {
+    "id": "dbg_fan_off",
+    "type": "debug",
+    "z": "tab_smart_office",
+    "name": "Ответ приёмника: FAN OFF",
+    "active": true,
+    "tosidebar": true,
+    "console": false,
+    "tostatus": false,
+    "complete": "payload",
+    "targetType": "msg",
+    "statusVal": "",
+    "statusType": "auto",
+    "x": 1400,
+    "y": 280,
+    "wires": []
+  },
+  {
+    "id": "inj_hum",
+    "type": "inject",
+    "z": "tab_smart_office",
+    "name": "HUM-01: 35-65 % каждые 5 с",
+    "props": [
+      {
+        "p": "payload",
+        "v": "46",
+        "vt": "jsonata"
+      },
+      {
+        "p": "topic",
+        "vt": "str"
+      }
+    ],
+    "repeat": "5",
+    "crontab": "",
+    "once": true,
+    "onceDelay": "3",
+    "topic": "HUM-01",
+    "payload": "46",
+    "payloadType": "jsonata",
+    "x": 150,
+    "y": 400,
+    "wires": [
+      [
+        "chg_hum_reading"
+      ]
+    ]
+  },
+  {
+    "id": "chg_hum_reading",
+    "type": "change",
+    "z": "tab_smart_office",
+    "name": "Чтение HUM-01 -> payload",
+    "rules": [
+      {
+        "t": "set",
+        "p": "timestamp",
+        "pt": "msg",
+        "to": "$millis()",
+        "tot": "jsonata"
+      },
+      {
+        "t": "set",
+        "p": "payload",
+        "pt": "msg",
+        "to": "{\"sensor_id\":\"HUM-01\",\"zone\":\"work_area\",\"unit\":\"%\",\"value\":payload,\"timestamp\":timestamp}",
+        "tot": "jsonata"
+      },
+      {
+        "t": "set",
+        "p": "headers",
+        "pt": "msg",
+        "to": "{\"Content-Type\":\"application/json\"}",
+        "tot": "json"
+      }
+    ],
+    "action": "",
+    "property": "",
+    "from": "",
+    "to": "",
+    "reg": false,
+    "x": 420,
+    "y": 400,
+    "wires": [
+      [
+        "http_hum"
+      ]
+    ]
+  },
+  {
+    "id": "http_hum",
+    "type": "http request",
+    "z": "tab_smart_office",
+    "name": "POST HUM-01 -> /api/readings",
+    "method": "POST",
+    "ret": "txt",
+    "paytoqs": "ignore",
+    "url": "http://192.168.20.10:8080/api/readings",
+    "tls": "",
+    "persist": false,
+    "proxy": "",
+    "insecureHTTPParser": false,
+    "authType": "",
+    "senderr": false,
+    "headers": [],
+    "x": 690,
+    "y": 400,
+    "wires": [
+      [
+        "dbg_hum"
+      ]
+    ]
+  },
+  {
+    "id": "dbg_hum",
+    "type": "debug",
+    "z": "tab_smart_office",
+    "name": "Ответ приёмника: HUM-01",
+    "active": true,
+    "tosidebar": true,
+    "console": false,
+    "tostatus": false,
+    "complete": "payload",
+    "targetType": "msg",
+    "statusVal": "",
+    "statusType": "auto",
+    "x": 960,
+    "y": 400,
+    "wires": []
+  }
+]
