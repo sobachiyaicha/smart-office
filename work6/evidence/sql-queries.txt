@@ -1,0 +1,36 @@
+PRAGMA table_info
+
+-- измерения
+SELECT device_id, metric, unit, COUNT(*) AS cnt
+FROM measurements GROUP BY device_id, metric;
+
+-- события вентилятора
+SELECT device_id, state, mode, COUNT(*) AS cnt
+FROM actuator_events GROUP BY state;
+
+-- последние записи
+SELECT id, device_id, metric, value, unit FROM measurements ORDER BY id DESC LIMIT 5;
+SELECT id, device_id, state, mode FROM actuator_events ORDER BY id DESC LIMIT 5;
+
+РЕЗУЛЬТАТ НА 16.11.2026
+
+HUM-01|humidity|%|31
+TEMP-01|temperature|C|32
+
+FAN-01|OFF|auto|51
+FAN-01|ON|auto|1
+
+id  device_id  metric       value  unit
+--  ---------  -----------  -----  ----
+69  TEMP-01    temperature  23.0   C
+68  HUM-01     humidity     46.0   %
+67  TEMP-01    temperature  23.0   C
+66  HUM-01     humidity     46.0   %
+65  TEMP-01    temperature  23.0   C
+
+id  device_id  state  mode
+--  ---------  -----  ----
+52  FAN-01     OFF    auto
+51  FAN-01     OFF    auto
+50  FAN-01     OFF    auto
+49  FAN-01     OFF    auto
