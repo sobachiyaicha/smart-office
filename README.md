@@ -21,7 +21,8 @@ work3/   Docker и Nginx на РЕД ОС 8 (compose и скриншоты)
 work4/   приёмник показаний и два датчика в Node-RED
 work5/   вентилятор в Node-RED по датчику температуры
 work6/   база SQLite на DB-01, приём показаний на 8081
-reports/ отчёты №1–№6
+work7/   Prometheus и Grafana на MON-01, метрики CTRL
+reports/ отчёты №1–№7
 journal.md  что делал по дням
 ```
 
@@ -67,4 +68,4 @@ Node-RED открывается с WIN: `http://192.168.30.10:1880`.
 
 ## Отчёты
 
-В папке `reports/` лежат отчёты №1–№6 в docx.
+В папке `reports/` лежат отчёты №1–№7 в docx.
