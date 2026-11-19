@@ -39,6 +39,11 @@ SQLite на `DB-01` — там же лежит страница истории.
 | Prometheus | `http://192.168.20.11:9090` | Status → Target health, Alerts |
 | Grafana | `http://192.168.20.11:3000` | панель `/d/office-controller-lab/`, Alerting → Alert rules |
 
+Приложение запускается через Docker Compose: приёмник на `CTRL-01` (`work4/ctrl/compose.yml`),
+Node-RED на `IOT-01` (`work4/iot/compose.yml`) и хранилище на `DB-01` (`work6/compose.yml`).
+Prometheus и Grafana на `MON-01` работают системными службами `systemd` — так требует задание №7,
+Docker Compose для мониторинга не используется.
+
 ## Схема обмена данными
 
 ```
