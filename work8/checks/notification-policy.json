@@ -1,0 +1,1 @@
+{"receiver":"office-email","group_by":["alertname","severity"],"group_wait":"0s","group_interval":"1m","repeat_interval":"5m","provenance":"api"}
